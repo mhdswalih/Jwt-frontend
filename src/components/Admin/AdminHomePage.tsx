@@ -9,7 +9,8 @@ import { useNavigate } from 'react-router-dom';
 import { RootState } from '../../Redux/redux-store.';
 import { useSelector } from 'react-redux';
 
-interface User {
+
+export interface User {
   _id: string;
   name: string;
   email: string;
@@ -19,7 +20,7 @@ interface User {
 const AdminHomePage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<User[] | []>([]);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isAddModal, setIsAddModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -30,8 +31,8 @@ const AdminHomePage = () => {
   const usersPerPage = 5;
   const admin = useSelector((state: RootState) => state.adminLogin.accessToken);
   const isLoggedIn = useSelector((state: RootState) => state.adminLogin);
+
  
-  useEffect(() => {
     const fetchUsers = async () => {
       try {
         const response = await axios.get('http://localhost:4200/admin/get-users');
@@ -43,24 +44,24 @@ const AdminHomePage = () => {
         setLoading(false);
       }
     };
-
+  useEffect(() => {
     fetchUsers();
   }, []);
 
-  // Filter users based on search term
+
   const filteredUsers = users.filter(user =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Get current users for pagination
+ 
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
   const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
 
   const handleDelete = async (userId: string) => {
-    // Confirmation dialog
+  
     const confirmDelete = window.confirm('Are you sure you want to delete this user?');
     
     if (!confirmDelete) return;
@@ -69,56 +70,46 @@ const AdminHomePage = () => {
       await axios.delete(`http://localhost:4200/admin/delete-user/${userId}`);
       setUsers(users.filter(user => user._id !== userId));
       toast.success('User Deleted Sucessfully')
-      setError(''); // Clear any previous errors
+      setError(''); 
     } catch (err) {
       setError('Failed to delete user');
     }
   };
 
   const handleSaveEdit = async (name: string, image: string | null) => {
-   
-    
     if (!selectedUser) return;
     if (!name.trim()) {
       toast.error('Name is required.');
       return;
     }
-  
+
+    // Use previous image if image is empty
+    const imageToSend = image || selectedUser.image || '';
+
     try {
-      const formData = new FormData();
-      
-      
-      formData.append('name', selectedUser.name.trim());
-      
-      if (image === null) {
-       
-        formData.append('image', 'null');
-      } else if (selectedUser.image && selectedUser.image !== image) {
-      
-        formData.append('image', selectedUser.image);
-      }
-     
-  
+      const updateData: any = {
+        name: name.trim(),
+        image: imageToSend
+      };
+
       const response = await axios.put(
         `http://localhost:4200/admin/edit-user/${selectedUser._id}`,
+        updateData,
         {
-          name,image,
           headers: {
-            'Content-Type': 'multipart/form-data'
+            'Content-Type': 'application/json'
           }
         }
       );
-  
+
       toast.success(response.data.message || 'User updated successfully');
-      
+
       setUsers(users.map(user =>
-        user._id === selectedUser._id ? { 
-          ...user, 
-          name: name.trim(),
-          image: image === null ? undefined : (image || user.image)
-        } : user
+        user._id === selectedUser._id
+          ? { ...user, name: name.trim(), image: imageToSend }
+          : user
       ));
-  
+
       setIsOpenModal(false);
     } catch (error: any) {
       console.error('Update error:', error);
@@ -130,8 +121,20 @@ const AdminHomePage = () => {
     navigate('/ad-login')
   }
   
-  const handleAddUser = async () => {
-   
+  const handleAddUser = async (name: string, email: string, image: string) => {
+    try {
+      const newUser = { name, email, image };
+      const response = await axios.post('http://localhost:4200/admin/add-user', newUser, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      // Add the new user to the users state
+      setUsers(prev => [...prev, response.data]);
+      setIsAddModal(false);
+      toast.success('User added successfully');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to add user');
+    }
   };
   
 
@@ -140,7 +143,7 @@ const AdminHomePage = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100">
-      {/* Navigation */}
+ 
       <nav className="bg-black px-4 py-3 shadow-md">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <h1 className="text-xl font-bold text-green-400">Admin Dashboard</h1>
@@ -172,12 +175,13 @@ const AdminHomePage = () => {
         pauseOnHover
         theme="colored"
         />
-      {/* Add User Modal */}
+      
       {isAddModal && (
         <UserModal
         isOpen={isAddModal}
         onClose={() => setIsAddModal(false)}
         onSave={handleAddUser}
+        setUsers={setUsers}
         />
       )}
 
@@ -212,16 +216,16 @@ const AdminHomePage = () => {
           </div>
         </div>
 
-        {/* Edit Modal */}
-        {selectedUser &&  (
-        <EditModal
-        isOpen={isOpenModal}
-        onClose={() => setIsOpenModal(false)}
-        onSave={(name, _, image) => handleSaveEdit(name, image)} 
-        initialName={selectedUser?.name || ''}
-        initialImage={selectedUser?.image || ''}
-        />
-      )}
+    
+     {selectedUser && (
+  <EditModal
+    isOpen={isOpenModal}
+    onClose={() => setIsOpenModal(false)}
+    onSave={(name, _, image) => handleSaveEdit(name, image)} 
+    initialName={selectedUser?.name || ''}
+    initialImage={selectedUser?.image || ''}
+  />
+)}
 
 {isLoggedIn ? (
   // Users Table
@@ -245,6 +249,7 @@ const AdminHomePage = () => {
             <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-green-400 uppercase tracking-wider">
               Actions
             </th>
+           
           </tr>
         </thead>
         <tbody className="bg-gray-800 divide-y divide-gray-700">
@@ -388,7 +393,7 @@ const AdminHomePage = () => {
                     >
                       <span className="sr-only">Last</span>
                       <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10l-3.293-3.293a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
                         <path fillRule="evenodd" d="M11.293 14.707a1 1 0 010-1.414L14.586 10l-3.293-3.293a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
                       </svg>
                     </button>

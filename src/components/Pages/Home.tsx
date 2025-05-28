@@ -147,12 +147,11 @@ const HomePage = () => {
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
             onSave={(name, password) => {
-              // TODO: Dispatch an action or API call to update the user
-              console.log("Updated name:", name);
-              console.log("Updated password:", password);
-              setIsModalOpen(false); // Close modal after save
+              setIsModalOpen(false); 
             }}
             initialName={user?.name || ''}
+            initialImage={user?.image || ''}
+            
           />
         </div>
       </div>

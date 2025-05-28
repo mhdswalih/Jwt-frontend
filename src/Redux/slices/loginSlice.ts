@@ -22,6 +22,7 @@ export const userLogin = createAsyncThunk(
     try {
       const response = await axios.post("http://localhost:4200/login-user", userData);
       return response.data;
+      
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || error.message);
     }
@@ -64,12 +65,16 @@ const loginSlice = createSlice({
       state.accessToken = null;
       state.status = "";
       state.error = null;
+
+      localStorage.removeItem('user');
+      localStorage.removeItem('accessTokens');
     },
     updateUser: (state, action) => {
       state.user = {
         ...state.user,
         ...action.payload,
       };
+       localStorage.setItem('user', JSON.stringify(state.user));
     }
     
   },
@@ -82,7 +87,10 @@ const loginSlice = createSlice({
       .addCase(userLogin.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.user = action.payload.data;
-        state.accessToken = action.payload.accessToken;
+        state.accessToken = action.payload.accessTokens;
+        console.log(action.payload)
+        localStorage.setItem('user', JSON.stringify(action.payload.data));
+        localStorage.setItem('accessTokens', action.payload.accessToken);
       })
       .addCase(userLogin.rejected, (state, action) => {
         state.status = "failed";

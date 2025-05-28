@@ -99,20 +99,20 @@ const Signup = () => {
 
           <p className="flex justify-between text-sm mt-2">
             <a
-              href="/Login"
+              href="/login"
               className="font-medium text-gray-600 hover:text-green-700"
             >
               Already have an account? Login
             </a>
           </p>
-
+{/* 
           <div className="relative my-4">
             <div className="relative flex items-center py-1">
               <div className="grow border-t border-gray-300"></div>
               <div className="mx-2 text-gray-500">or</div>
               <div className="grow border-t border-gray-300"></div>
             </div>
-          </div>
+          </div> */}
 
           <div>
             <form noValidate className="mb-4" onSubmit={handleSubmit}>

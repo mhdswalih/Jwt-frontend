@@ -15,9 +15,6 @@ export const adminLogin = createAsyncThunk(
     }
   );
 
-  
-  
-
 
 interface LoginState {
   admin: any;
@@ -32,8 +29,6 @@ const initialState: LoginState = {
   status: "",
   error: null,
 };
-
-
 
 const adminSlice = createSlice({
     name: "login",

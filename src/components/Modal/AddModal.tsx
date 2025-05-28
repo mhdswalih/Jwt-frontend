@@ -1,14 +1,16 @@
 import axios from 'axios';
-import { useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
+import { User } from '../Admin/AdminHomePage';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSave: (name: string, email: string, password: string, image: string) => void;
+  setUsers: Dispatch<SetStateAction<User[]>>;
 }
 
-const UserModal = ({ isOpen, onClose, onSave }: Props) => {
+const UserModal = ({ isOpen, onClose, onSave, setUsers }: Props) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -38,7 +40,7 @@ const UserModal = ({ isOpen, onClose, onSave }: Props) => {
       }
 
       setSelectedFile(file);
-      
+
       // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -76,11 +78,15 @@ const UserModal = ({ isOpen, onClose, onSave }: Props) => {
         name,
         email,
         password,
-        image: imageBase64
+        image: imageBase64,
+
+      });
+
+      setUsers((prevUsers: User[]) => {
+        return [...prevUsers, response.data.user]
       });
 
       toast.success(response.data.message || 'User Added Successfully');
-      location.reload()
       onSave(name, email, password, imageBase64);
       onClose();
     } catch (error: any) {
@@ -90,6 +96,15 @@ const UserModal = ({ isOpen, onClose, onSave }: Props) => {
       setIsLoading(false);
     }
   };
+  useEffect(() => {
+    handleSubmit
+    handleImageChange
+
+    return () => {
+      handleSubmit
+      handleImageChange
+    }
+  }, [])
 
   // Helper function to convert file to base64
   const convertToBase64 = (file: File): Promise<string> => {
@@ -108,7 +123,7 @@ const UserModal = ({ isOpen, onClose, onSave }: Props) => {
       <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-green-400">Add New User</h2>
-          <button 
+          <button
             onClick={onClose}
             className="text-gray-400 hover:text-white"
             disabled={isLoading}
@@ -118,7 +133,7 @@ const UserModal = ({ isOpen, onClose, onSave }: Props) => {
             </svg>
           </button>
         </div>
-        
+
         <ToastContainer
           position="top-right"
           autoClose={5000}
@@ -131,7 +146,7 @@ const UserModal = ({ isOpen, onClose, onSave }: Props) => {
           pauseOnHover
           theme="colored"
         />
-        
+
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-gray-300 mb-2" htmlFor="name">Name</label>
@@ -145,7 +160,7 @@ const UserModal = ({ isOpen, onClose, onSave }: Props) => {
               disabled={isLoading}
             />
           </div>
-          
+
           <div className="mb-4">
             <label className="block text-gray-300 mb-2" htmlFor="email">Email</label>
             <input
@@ -158,7 +173,7 @@ const UserModal = ({ isOpen, onClose, onSave }: Props) => {
               disabled={isLoading}
             />
           </div>
-          
+
           <div className="mb-4">
             <label className="block text-gray-300 mb-2" htmlFor="password">Password</label>
             <input
@@ -171,7 +186,7 @@ const UserModal = ({ isOpen, onClose, onSave }: Props) => {
               disabled={isLoading}
             />
           </div>
-          
+
           <div className="mb-4">
             <label className="block text-gray-300 mb-2" htmlFor="image">Profile Image (Optional)</label>
             <input
@@ -183,17 +198,17 @@ const UserModal = ({ isOpen, onClose, onSave }: Props) => {
               disabled={isLoading}
             />
           </div>
-          
+
           {previewImage && (
             <div className="mb-4 flex justify-center">
-              <img 
-                src={previewImage} 
-                alt="Preview" 
+              <img
+                src={previewImage}
+                alt="Preview"
                 className="max-h-40 rounded-md border border-gray-600"
               />
             </div>
           )}
-          
+
           <div className="flex justify-end">
             <button
               type="button"

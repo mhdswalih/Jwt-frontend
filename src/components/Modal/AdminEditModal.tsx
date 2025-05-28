@@ -22,7 +22,7 @@ const EditModal: React.FC<Props> = ({
   const [previewImage, setPreviewImage] = useState<string>(initialImage);
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-   console.log(previewImage, '------------------------------------');
+
    
   // Reset form when modal opens/closes
   useEffect(() => {
@@ -89,16 +89,15 @@ const handleSubmit = async (e: React.FormEvent) => {
   try {
     let imageToSend: string | null = null;
     
-    // Case 1: New image selected
+  
     if (selectedFile) {
       imageToSend = await convertToBase64(selectedFile);
     } 
-    // Case 2: Image was removed (previewImage is empty but initialImage existed)
+    
     else if (!previewImage && initialImage) {
       imageToSend = null;
     }
-    // Case 3: No changes to image
-    // imageToSend remains undefined (won't be sent to backend)
+    
 
     await onSave(name.trim(), password.trim(), imageToSend === undefined ? initialImage : imageToSend);
     onClose();
@@ -173,6 +172,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
+                 value=''
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-100 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-green-600 file:text-white hover:file:bg-green-700"
                 disabled={isLoading}
               />

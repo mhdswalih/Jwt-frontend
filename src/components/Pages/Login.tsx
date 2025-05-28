@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { AppDispatch } from "../../Redux/redux-store."; 
 import { userLogin } from "../../Redux/slices/loginSlice"; 
 import { toast, ToastContainer } from "react-toastify";
+import { PayloadAction } from "@reduxjs/toolkit";
 
 const LoginPage = () => {
   const [email, setEmail] = useState<string>("");
@@ -16,16 +17,18 @@ const LoginPage = () => {
     e.preventDefault();
 
     try {
-      const resultAction = await dispatch(userLogin({ email, password }));
+      const resultAction :PayloadAction<any > = await dispatch(userLogin({ email, password }));
 
       if (userLogin.fulfilled.match(resultAction)) {
         toast.success("Login successfully");
-        navigate("/"); 
+        setTimeout(()=>{
+          navigate("/"); 
+        },1000)
       } else {
-        console.error("Login failed:", resultAction.payload);
+        toast.error("Invalid Email or Password:", resultAction.payload);
       }
-    } catch (err) {
-      console.error("Unexpected error:", err);
+    } catch (err:any) {
+      toast.error("Unexpected error:", err);
     }
   };
   return (
@@ -55,7 +58,7 @@ const LoginPage = () => {
         <div className="my-auto flex flex-col w-full max-w-[450px] mx-auto mt-8 mb-10">
           <p className="text-[32px] font-bold mb-6 text-green-600">Login</p>
          
-          <div className="">
+          {/* <div className="">
             <form className="pb-2" onSubmit={handleSubmit}>
               <input type="hidden" name="provider" value="google" />
               <button
@@ -125,23 +128,23 @@ c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.
                 </span>
                 <span>Phone</span>
               </button>
-            </form>
-          </div>
+            </form> */}
+          {/* </div> */}
           <p className="flex justify-between text-sm mt-2">
             <a href="/signup" className="font-medium text-gray-600 text-sm">
               Don't have an account? Sign up
             </a>
-            <a href="" className="text-green-600 hover:text-green-700">
+            {/* <a href="" className="text-green-600 hover:text-green-700">
               Forget Password?
-            </a>
+            </a> */}
           </p>
-          <div className="relative my-4">
+          {/* <div className="relative my-4">
             <div className="relative flex items-center py-1">
               <div className="grow border-t border-gray-300"></div>
               <div className="mx-2 text-gray-500">or</div>
               <div className="grow border-t border-gray-300"></div>
             </div>
-          </div>
+          </div> */}
           <div>
             <form noValidate className="mb-4" onSubmit={handleSubmit}>
               <div className="grid gap-2">
@@ -176,7 +179,7 @@ c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.
                     onChange={(e) => setPassword(e.target.value)}
                   />
 
-                  <div className="flex items-center space-x-2 mt-2">
+                  {/* <div className="flex items-center space-x-2 mt-2">
                   <input 
                     type="checkbox" 
                     id="terms" 
@@ -192,7 +195,7 @@ c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.
                         Privacy Policy
                       </a>
                     </label>
-                  </div>
+                  </div> */}
                 </div>
                 <button
                   className="whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-200 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-green-600 text-white hover:bg-green-700 flex w-full max-w-full mt-6 items-center justify-center rounded-lg px-4 py-4 text-base font-medium"
